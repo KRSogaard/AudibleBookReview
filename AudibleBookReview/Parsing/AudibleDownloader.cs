@@ -1,4 +1,5 @@
 ﻿using AudibleBookReview.Data;
+using AudibleBookReview.Utils;
 using CsQuery;
 using System;
 using System.Collections.Generic;
@@ -37,8 +38,16 @@ namespace AudibleBookReview.Parsing
                         {
                             audioBook.Narrators.Add(a.InnerText.Trim());
                         }
-                        audioBook.
-
+                        audioBook.Series = dom.Select(".seriesLabel a").First().Text().Trim();
+                        if (dom.Select("li.seriesLabel").Length > 0)
+                        {
+                            audioBook.SeriesId = dom.Select(".seriesLabel a").First().Attr("href").Split('?')[0].Split('/').Last();
+                            audioBook.BookNumber = dom.Select("li.seriesLabel").First().Text().Split(",").Last().Trim();
+                        }
+                        String runtime = dom.Select("li.runtimeLabel").Text();
+                        string hours = RegexHelper.Match(@"(\d+)\s+hrs", runtime);
+                        string mins = RegexHelper.Match(@"(\d+)\s+mins", runtime);
+                        audioBook.Length = new TimeSpan(int.Parse(hours), int.Parse(mins), 0);
                     }
                 }
             }
