@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudibleBookReview", "AudibleBookReview\AudibleBookReview.csproj", "{6F7C6EFD-D8B1-47F7-87C5-C18C7E6D33CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F7C6EFD-D8B1-47F7-87C5-C18C7E6D33CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F7C6EFD-D8B1-47F7-87C5-C18C7E6D33CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F7C6EFD-D8B1-47F7-87C5-C18C7E6D33CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F7C6EFD-D8B1-47F7-87C5-C18C7E6D33CA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F4DB6EEE-EBC7-486E-B01E-A822FC65B645}
+	EndGlobalSection
+EndGlobal
