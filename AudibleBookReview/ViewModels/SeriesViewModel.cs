@@ -1,14 +1,12 @@
 ﻿using AudibleBookReview.Data;
 using AudibleBookReview.Utils;
+using Humanizer;
 using Prism.Commands;
 using Prism.Mvvm;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -27,6 +25,12 @@ namespace AudibleBookReview.ViewModels
         public int BookCount { get; set; }
         public int OwnedBooksCount { get; set; }
         public BitmapImage BookCoverImage { get; set; }
+        public string BooksSinceLastText { get; set; }
+        public string TimeSinceLastRelease { 
+            get {
+                return LastRelease.Humanize();
+            } 
+        }
 
         public ObservableCollection<SeriesBookViewModel> Books { get; set; }
 
@@ -64,6 +68,7 @@ namespace AudibleBookReview.ViewModels
                     _toogleAbandond = new DelegateCommand(() => {
                         dataStore.ToogleAbandond(series.Id);
                         mainViewModel.ToogleAbandond(this);
+                        IsAbandond = !IsAbandond;
                     });
                 }
                 return _toogleAbandond;
@@ -99,6 +104,15 @@ namespace AudibleBookReview.ViewModels
                 .Select(x => SeriesBookViewModel.Create(x, dataStore, mainViewModel))
                 .ToList());
 
+            for (int i = 0; i < viewModel.Books.Count; i++)
+            {
+                if (dataStore.MyBooks.ContainsKey(viewModel.Books[i].AudioBook.Id))
+                {
+                    viewModel.BooksSinceLastText = i.ToString();
+                    break;
+                }
+            }
+
             AudioBook latest = viewModel.Books[0].AudioBook;
 
             viewModel.LastRelease = latest.Released;
@@ -107,6 +121,8 @@ namespace AudibleBookReview.ViewModels
 
             string imagePath = Path.Combine(PathUtils.GetImagePath(), latest.Id + ".jpg");
             viewModel.BookCoverImage = new BitmapImage(new Uri(imagePath, UriKind.Absolute));
+
+
 
             return viewModel;
         }

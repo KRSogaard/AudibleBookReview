@@ -13,34 +13,53 @@
         </Grid.ColumnDefinitions>
 
         <Image Source="{Binding BookCoverImage}" Grid.Column="0" VerticalAlignment="Top" />
+
+
         <StackPanel Grid.Column="1" Margin="10, 0, 0, 0">
             <TextBlock Text="{Binding Title}" FontSize="28" FontWeight="ExtraBold" />
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Text="Latest Release:" FontWeight="Bold" />
-                <TextBlock Margin="5,0,0,0" Text="{Binding LastReleaseText}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" >
-                <TextBlock Text="Owned books:" FontWeight="Bold" />
-                <TextBlock Margin="5,0,0,0" Text="{Binding OwnedBooksCount}" />
-                <TextBlock Margin="5,0,0,0" Text="of" />
-                <TextBlock Margin="5,0,0,0" Text="{Binding BookCount}" />
-            </StackPanel>
-            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Latest Release:" FontWeight="Bold" />
+                <StackPanel Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" Orientation="Horizontal">
+                    <TextBlock Text="{Binding LastReleaseText}" />
+                    <TextBlock Margin="5,0,0,0" Text="{Binding TimeSinceLastRelease}" FontWeight="Bold" />
+                </StackPanel>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Owned books:" FontWeight="Bold" />
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" >
+                    <TextBlock Margin="5,0,0,0" Text="{Binding OwnedBooksCount}" />
+                    <TextBlock Margin="5,0,0,0" Text="of" />
+                    <TextBlock Margin="5,0,0,0" Text="{Binding BookCount}" />
+                </StackPanel>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Books since last purchase:" FontWeight="Bold" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Margin="5,0,0,0" Text="{Binding BooksSinceLastText}" />
+            </Grid>
+
             <Button Command="{Binding ToogleAbandond}" Visibility="{Binding ShowAbandondButton}">Abandon Series</Button>
             <Button Command="{Binding ToogleAbandond}" Visibility="{Binding ShowUnAbandondButton}">Continue Series</Button>
 
-            <ItemsControl ItemsSource="{Binding Books}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <local:BookView DataContext="{Binding}" Margin="0,0,0,10" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <Expander Header="Books">
+                <ItemsControl ItemsSource="{Binding Books}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:BookView DataContext="{Binding}" Margin="0,0,0,10" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
         </StackPanel>
     </Grid>
 </UserControl>

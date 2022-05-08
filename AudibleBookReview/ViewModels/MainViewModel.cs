@@ -35,6 +35,66 @@ namespace AudibleBookReview.ViewModels
             }
         }
 
+        private string _currentProcess;
+        public string CurrentProcess
+        {
+            get { return _currentProcess; }
+            set
+            {
+                SetProperty(ref _currentProcess, value);
+            }
+        }
+
+        private Visibility _isProcessing;
+        public Visibility IsProcessing
+        {
+            get { return _isProcessing; }
+            set
+            {
+                SetProperty(ref _isProcessing, value);
+            }
+        }
+
+        private int _mainProcessCurrent;
+        public int MainProcessCurrent
+        {
+            get { return _mainProcessCurrent; }
+            set
+            {
+                SetProperty(ref _mainProcessCurrent, value);
+            }
+        }
+
+        private int _mainProcessMax;
+        public int MainProcessMax
+        {
+            get { return _mainProcessMax; }
+            set
+            {
+                SetProperty(ref _mainProcessMax, value);
+            }
+        }
+
+        private int _subProcessCurrent;
+        public int SubProcessCurrent
+        {
+            get { return _subProcessCurrent; }
+            set
+            {
+                SetProperty(ref _subProcessCurrent, value);
+            }
+        }
+
+        private int _subProcessMax;
+        public int SubProcessMax
+        {
+            get { return _subProcessMax; }
+            set
+            {
+                SetProperty(ref _subProcessMax, value);
+            }
+        }
+
         private string _orderBy;
         public string OrderBy
         {
@@ -53,6 +113,7 @@ namespace AudibleBookReview.ViewModels
             CompleteSeries = new ObservableCollection<SeriesViewModel>();
             OrderBy = "latest-release";
             dataStore = new DataStore(PathUtils.GetBasePath());
+            IsProcessing = Visibility.Collapsed;
             RebuildData();
 
         }
@@ -66,7 +127,13 @@ namespace AudibleBookReview.ViewModels
                 {
                     _import = new DelegateCommand(() =>
                     {
+                        IsProcessing = Visibility.Visible;
+                        CurrentProcess = "Importing Audible Books";
                         StatusMessage = "Starting Audible book import";
+
+                        MainProcessMax = 5;
+                        MainProcessCurrent = 0;
+
                         OpenFileDialog openFileDialog = new OpenFileDialog();
                         if (openFileDialog.ShowDialog() == true)
                         {
@@ -83,6 +150,9 @@ namespace AudibleBookReview.ViewModels
                                 List<AudioBook> unknownBooks = AudioBookUtils.GetNewAudioBooks(books, dataStore.AllBooks);
 
                                 int count = 0;
+                                MainProcessCurrent++;
+                                SubProcessMax = unknownBooks.Count;
+                                SubProcessCurrent = 0;
                                 foreach (AudioBook book in unknownBooks)
                                 {
                                     count++;
@@ -101,6 +171,7 @@ namespace AudibleBookReview.ViewModels
                                 DownloadMissingImages();
 
                                 StatusMessage = "Import Done";
+                                IsProcessing = Visibility.Collapsed;
                             });
                         }
                     });
@@ -153,11 +224,18 @@ namespace AudibleBookReview.ViewModels
                 {
                     _refresh = new DelegateCommand(() =>
                     {
+                        IsProcessing = Visibility.Visible;
+                        CurrentProcess = "Refreshing Series";
                         StatusMessage = "Refreshing Series";
+
+                        MainProcessMax = 4;
+                        MainProcessCurrent = 0;
+
                         Task.Factory.StartNew(() =>
                         {
                             RefreshSeries();
                             DownloadMissingImages();
+                            IsProcessing = Visibility.Collapsed;
                         });
                     });
                 }
@@ -169,9 +247,13 @@ namespace AudibleBookReview.ViewModels
         {
             List<BookSeries> bookSeriesToDownload = AudioBookUtils.GetSeriesToDownload(dataStore.MyBooks.Values.ToList(), dataStore.Series);
             int count = 0;
+            MainProcessCurrent++;
+            SubProcessMax = bookSeriesToDownload.Count;
+            SubProcessCurrent = 0;
             foreach (BookSeries bookSeries in bookSeriesToDownload)
             {
                 count++;
+                SubProcessCurrent = count;
                 StatusMessage = "Downloading Series (" + count + "/" + bookSeriesToDownload.Count + ") " + bookSeries.Name;
                 dataStore.Add(AudibleDownloader.GetSeries(bookSeries));
                 if (count % 20 == 0)
@@ -201,9 +283,13 @@ namespace AudibleBookReview.ViewModels
                 }
             }
             count = 0;
+            MainProcessCurrent++;
+            SubProcessMax = unknownBooks.Count;
+            SubProcessCurrent = 0;
             foreach (AudioBook book in unknownBooks)
             {
                 count++;
+                SubProcessCurrent = count;
                 StatusMessage = "Downloading Book (" + count + "/" + unknownBooks.Count + ") " + book.Title + " by " + book.Author;
                 dataStore.Add(AudibleDownloader.GetBook(book));
                 if (count % 20 == 0)
@@ -228,10 +314,15 @@ namespace AudibleBookReview.ViewModels
                 }
             }
             int count = 0;
+            MainProcessCurrent++;
+            SubProcessMax = missingImages.Count;
+            SubProcessCurrent = 0;
             foreach (Tuple<AudioBook, string> book in missingImages)
             {
-                StatusMessage = "Downloading Image (" + count + " of " + missingImages.Count + ") for " + book.Item1.Title + " by " + book.Item1.Author;
                 count++;
+                StatusMessage = "Downloading Image (" + count + " of " + missingImages.Count + ") for " + book.Item1.Title + " by " + book.Item1.Author;
+                SubProcessCurrent++;
+
                 AudibleDownloader.DownloadBookImage(book.Item1, book.Item2);
                 Thread.Sleep(1000);
             }

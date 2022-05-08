@@ -34,8 +34,9 @@ namespace AudibleBookReview.Utils
                 {
                     continue;
                 }
-                if (!knowSeries.ContainsKey(book.SeriesId) ||
-                    knowSeries[book.SeriesId].LastUpdated < DateTime.Now.Subtract(TimeSpan.FromDays(30)))
+                //if (!knowSeries.ContainsKey(book.SeriesId))
+                // if (!knowSeries.ContainsKey(book.SeriesId) ||
+                //    knowSeries[book.SeriesId].LastUpdated < DateTime.Now.Subtract(TimeSpan.FromDays(30)))
                 {
                     series.Add(new BookSeries()
                     {
