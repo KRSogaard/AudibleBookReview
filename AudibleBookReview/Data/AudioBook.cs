@@ -8,6 +8,9 @@ namespace AudibleBookReview.Data
 {
     public class AudioBook
     {
+        public bool unavailable { get; set; }
+        public DateTime LastUpdated { get; set; }
+
         public String Id { get; set; }
         public String Link { get; set; }
         public String Title { get; set; }
@@ -16,6 +19,7 @@ namespace AudibleBookReview.Data
         public List<String> Narrators { get; set; }
         public String Series { get; set; }
         public String SeriesId { get; set; }
+        public String SeriesLink { get; set; }
         public String BookNumber { get; set; }
         public TimeSpan Length { get; set; }
         public DateTime Released { get; set; }

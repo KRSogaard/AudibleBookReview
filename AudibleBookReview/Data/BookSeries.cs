@@ -10,7 +10,9 @@ namespace AudibleBookReview.Data
     {
         public String Id { get; set; }
         public String Name { get; set; }
+        public String Link { get; set; }
+        public String Summary { get; set; }
         public List<BookSeriesItem> Items { get; set; }
-
+        public DateTime LastUpdated { get; set; }
     }
 }
