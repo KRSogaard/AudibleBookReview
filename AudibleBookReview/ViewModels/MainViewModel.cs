@@ -146,18 +146,31 @@ namespace AudibleBookReview.ViewModels
 
                             Task.Factory.StartNew(() =>
                             {
-                                List<AudioBook> books = AudibleImportParser.ParseBooks(importFileName);
+                                List<AudioBook> books;
+                                try
+                                {
+                                    books = AudibleImportParser.ParseBooks(importFileName);
+                                } catch (Exception ex)
+                                {
+                                    StatusMessage = "There was an error importing the owned books: " + ex.Message;
+                                    return;
+                                }
                                 List<AudioBook> unknownBooks = AudioBookUtils.GetNewAudioBooks(books, dataStore.AllBooks);
 
                                 int count = 0;
                                 MainProcessCurrent++;
                                 SubProcessMax = unknownBooks.Count;
                                 SubProcessCurrent = 0;
+                                List<string> forceUpdateSeries = new List<string>();
                                 foreach (AudioBook book in unknownBooks)
                                 {
                                     count++;
                                     StatusMessage = "Downloading Book (" + count + "/" + unknownBooks.Count + ") " + book.Title + " by " + book.Author;
                                     dataStore.AddMyBook(AudibleDownloader.GetBook(book));
+                                    if (book.SeriesId != null)
+                                    {
+                                        forceUpdateSeries.Add(book.SeriesId);
+                                    }
                                     if (count % 20 == 0)
                                     {
                                         dataStore.Save();
@@ -165,9 +178,19 @@ namespace AudibleBookReview.ViewModels
                                     Thread.Sleep(1000);
                                 }
                                 dataStore.Save();
+                                // Making sure we have all owned books marked
+                                foreach(var book in books.Where(book => !dataStore.MyBooks.ContainsKey(book.Id)))
+                                {
+                                    dataStore.AddMyBook(book);
+                                    if (book.SeriesId != null)
+                                    {
+                                        forceUpdateSeries.Add(book.SeriesId);
+                                    }
+                                }
+                                dataStore.Save();
 
-                                
-                                RefreshSeries();
+
+                                RefreshSeries(forceUpdateSeries);
                                 DownloadMissingImages();
 
                                 StatusMessage = "Import Done";
@@ -179,6 +202,27 @@ namespace AudibleBookReview.ViewModels
                 return _import;
             }
         }
+        private ICommand _goToHelp;
+        public ICommand GoToHelp
+        {
+            get
+            {
+                if (_goToHelp == null)
+                {
+                    _goToHelp = new DelegateCommand(() =>
+                    {
+                        var sInfo = new System.Diagnostics.ProcessStartInfo("https://github.com/KRSogaard/AudibleBookReview")
+                        {
+                            UseShellExecute = true,
+                        };
+                        System.Diagnostics.Process.Start(sInfo);
+                    });
+                }
+                return _goToHelp;
+            }
+        }
+
+        
 
         internal void ToogleAbandond(SeriesViewModel seriesViewModel)
         {
@@ -233,7 +277,7 @@ namespace AudibleBookReview.ViewModels
 
                         Task.Factory.StartNew(() =>
                         {
-                            RefreshSeries();
+                            RefreshSeries(new List<string>());
                             DownloadMissingImages();
                             IsProcessing = Visibility.Collapsed;
                         });
@@ -243,9 +287,9 @@ namespace AudibleBookReview.ViewModels
             }
         }
 
-        private void RefreshSeries()
+        private void RefreshSeries(List<String> forceUpdateSeries)
         {
-            List<BookSeries> bookSeriesToDownload = AudioBookUtils.GetSeriesToDownload(dataStore.MyBooks.Values.ToList(), dataStore.Series);
+            List<BookSeries> bookSeriesToDownload = AudioBookUtils.GetSeriesToDownload(dataStore.MyBooks.Values.ToList(), dataStore.Series, forceUpdateSeries);
             int count = 0;
             MainProcessCurrent++;
             SubProcessMax = bookSeriesToDownload.Count;
@@ -308,7 +352,7 @@ namespace AudibleBookReview.ViewModels
             foreach (AudioBook book in dataStore.AllBooks.Values)
             {
                 string bookImagePath = Path.Combine(PathUtils.GetImagePath(), book.Id + ".jpg");
-                if (!File.Exists(bookImagePath))
+                if (!File.Exists(bookImagePath) && !String.IsNullOrEmpty(book.Title))
                 {
                     missingImages.Add(new Tuple<AudioBook, string>(book, bookImagePath));
                 }

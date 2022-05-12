@@ -15,7 +15,8 @@ namespace AudibleBookReview.Utils
             List<AudioBook> unknownBooks = new List<AudioBook>();
             foreach (AudioBook book in importedBooks)
             {
-                if (!knownBooks.ContainsKey(book.Id)) {
+                if (!knownBooks.ContainsKey(book.Id) || 
+                    String.IsNullOrEmpty(knownBooks[book.Id].Title)) { // This is to try to get books that was taken off Audible
                     unknownBooks.Add(book);
                 } 
             }
@@ -23,7 +24,7 @@ namespace AudibleBookReview.Utils
             return unknownBooks;
         }
 
-        public static List<BookSeries> GetSeriesToDownload(List<AudioBook> audioBooks, Dictionary<string, BookSeries> knowSeries)
+        public static List<BookSeries> GetSeriesToDownload(List<AudioBook> audioBooks, Dictionary<string, BookSeries> knowSeries, List<string> forceUpdateSeries)
         {
             Dictionary<string, bool> addedMap = new Dictionary<string, bool>();
             List<BookSeries> series = new List<BookSeries>();
@@ -34,9 +35,9 @@ namespace AudibleBookReview.Utils
                 {
                     continue;
                 }
-                //if (!knowSeries.ContainsKey(book.SeriesId))
-                // if (!knowSeries.ContainsKey(book.SeriesId) ||
-                //    knowSeries[book.SeriesId].LastUpdated < DateTime.Now.Subtract(TimeSpan.FromDays(30)))
+                if (!knowSeries.ContainsKey(book.SeriesId) ||
+                    knowSeries[book.SeriesId].LastUpdated < DateTime.Now.Subtract(TimeSpan.FromDays(30)) ||
+                    forceUpdateSeries.Any(x => string.Equals(x, book.SeriesId)))
                 {
                     series.Add(new BookSeries()
                     {
